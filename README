@@ -1,0 +1,188 @@
+-------------------------------------------------------------------------------
+                               Tema 2 - PA
+-------------------------------------------------------------------------------
+
+
+AUTOR:
+  Smadu Razvan-Alexandru 325CB
+
+FISIERE INCLUSE:
+  - ./src/Disjcnt.java
+  - ./src/Minlexbfs.java
+  - ./src/Revedges.java
+  - ./src/Rtd.java
+  - ./Makefile
+  - ./README
+
+README
+  1. Problema Minlexbfs
+    Pentru aceasta problema, generarea solutiei in parcurgerea lexicografica
+    implica practic sortarea nodurilor in listele de adiacenta. Aceasta
+    garanteaza faptul ca nodurile vor fi parcurse in  ordinea ceruta, realizata
+    de BFS. Prin urmare, alogirmul este urmatorul:
+        - Se sorteaza fiecare lista de adiacenta;
+        - Se aplica BFS.
+
+    Complexitatea algoritmului:
+      - Complexitatea temporala: Sortarea are complexitatea O(|E| log |E|), iar
+        complexitatea BFS-ului este de O(|V| + |E|), prin urmare avem
+                            O(|V| + |E| log |E|)
+
+      - Complexitatea spatiala: O(|V| + |E|) pentru ca se retin toate nodurile 
+        in array-uri, iar graful este retinut cu liste de adiacente.
+
+  2. Problema Disjcnt
+    Breviar Teoretic
+      Pentru detectia cailor disjuncte intr-un graf, algoritmul cel mai naiv 
+      este de a realiza un BFS, sau un Dijkstra pentru detectia unui path intre 
+      oricare doua noduri, eliminarea caii respective si rerularea algoritmului.
+      In cazul in care exista cel putin doua cai, dupa eliminarea uneia, va mai 
+      exista o cale prin care se poat lega cele doua noduri. Deficienta acestui 
+      algoritm este complexitatea mult prea mare: O(|V|^4) (deoarece se 
+      realizeaza intre fiecare 2 noduri, iar cautarea unei cai este cel mult 
+      O(|V|^2)).
+
+      Deci, trebuie cautat un alt algorimt pentru a gasi caile disjuncte.
+      Din observatiile facute anterior, se poate vedea ca muchiile care sunt
+      comune reprezinta muchii critice, deoarece atunci cand sunt eliminate,
+      nu vor mai exista cai comune intre nodurile dintre componenetele conexe
+      rezultate in urma eliminarii.
+
+        Demonstratie:
+          Fie un graf G = (V, E) neorientat si conex.
+          Si fie (u,v) din V o pereche de noduri pentru care dorim sa verificam
+          daca exista cel putin doua cai disjuncte. Daca exista aceste doua cai,
+          eliminand una dintre ele, sigur va exista o alta cale ce leaga cele
+          doua noduri (e cea ramasa). Acum, presupunem ca nu exista doua cai ce
+          leaga u si v. Prin urmare, intre oricare doua cai pe care le-am alege
+          (daca exista), acestea ar avea in comun cel putin o muchie comuna.
+          Daca am elimina aceasta muchie, nu va mai exista nicio cale catre
+          intre u si v. Prin urmare, u si v vor afla in componente conexe
+          diferite, multime pe care o vom nota C_c (multimea tuturor
+          componentelor conexe rezultate in urma elinarii tuturor muchiilor
+          critice). Numarul perechilor de noduri intre care exista o cale
+          este dat de combinari de n luate cate 2, unde n reprezinta dimensiunea
+          componentei conexe (numarul de noduri).
+
+      Din demonstratia de mai sus reiese si algoritmul care da numarul de
+      perechi de noduri intre care exista cel putin doua cai disjuncte.
+
+      Algoritm:
+        1) Se determina muchiile critice din graf
+        2) Se elimita toate muchiile critice din graf.
+        3) Se determina componentele conexe din graful rezultat.
+        4) Se calculeaza numarul de perechi dupa formula urmatoare:
+                             ____     _        _
+                             \       /  size(c) \
+                        n =  /___    \_   2    _/ , 
+                           c din C_c
+
+            unde n       - rezultatul cautat
+                 c       - o componenta din C_c
+                 C_c     - multimea tuturor componentelor conexe din graful 
+                           rezultat in urma eliminarii muchiilor critice
+                 size(c) - numarul de noduri din componenta c
+        
+        Nota: Termenul din suma (care este pe 2 linii) reprezinta combinari, 
+              fiind utilizata notatia de la [1].
+
+      In implementarea mea, am folosit algoritmii de la laborator, adaptati pe
+      pe un graf neorientat, multi-edge.
+
+      Nota: - Algoritmul functioneaza si pe un graf multi-edge deoarece doua 
+              muchii intre aceleasi noduri nu vor fi niciodata muchii critice, 
+              deci vor face parte din aceeasi componenta conexa.
+            - De asemena, demonstratia de mai sus nu este completa, din 
+              motive de redactare (nu e foarte usor de folosit ASCII Art pentru 
+              un graf) si sunt lucruri intuitive (sper sa nu gresesc).
+      
+      Complexitatea algoritmului:
+        Surprinzator, complexitatea algoritmului este apropape liniar.
+        Complexitatea tempoarala:
+          Toti algoritmii utilizati sunt de complexitate O(|V| + |E|) (muchii
+          critice, CTC adaptat pentru graf neorientat, stergerea unei muchii), 
+          iar calculul se face in O(1).
+          
+          Prin urmare, complexitatea este O(|V| + |E|). 
+          
+          Nota: Afirmasem mai sus ca algoritmul are o complexitatea "apropape"
+                liniara. Aceasta deoarece pentru un graf complet, algoritmii 
+                de mai sus se comporta in O(|V|^2).
+          
+        Complexitatea spatiala
+                  O(|E|) + O(|V|) + O(|V| + |E|) = O(|V| + |E|)
+          
+          Aceasta complexitate este data de spatiul pentru HashMap, ce contine 
+          muchii (O(|E|)), listele de adiacenta (O(|V| + |E|)), stiva si 
+          rezultatul final (O(|V|)). 
+          
+
+  3. Problema Rtd
+    Pentru aceasta problema am aplicat Dijkstra, in care starile utilizate 
+    depind de pozitia zarului pe harta si a costului pentru a ajunge pana la 
+    acea pozitie. 
+
+    Codificarea zarului este facuta astfel: (down - 1) * 4 + (forward - 1) % 4,
+    unde down reprezinta indicele fetei care se afla in jos, iar forward 
+    reprezinta indicele fetei orientate spre Nord (in fata), si nu depinde de 
+    pozitia zarului (adica de urmatoare mutare si de o mutare anterioara). 
+    Aceasta codificara asigura ca toate cele 24 de stari posibile (deoarece 
+    pentru fiecare fata sunt 4 stari, si zarul are in total 6 fete => 
+    6 * 4 = 24), sunt asignate intr-un mod eficient si fara coliziuni.
+
+    Algoritmul Dijkstra utilizat foloseste drept conditie de relaxare:
+
+    sum[x][y][code] > sum[crtPos.x][crtPos.y][crtDieCode] + die[nextState.down]
+
+    unde sum[x][y][code] -> suma de la start la pozitia (x,y), ajungand in 
+                            configuratia code
+    die[nextState.down] -> costul fetei care este orientat in jos, al zarului
+
+
+    La final se cauta distanta minima, din configuratia care da drumul minim.
+    In rest este algoritmul Dijkstra, adaptat pentru un board.
+
+    Complexitatea algoritmului: 
+      Complexitatea temporala este data de algoritmul lui Dijkstra:
+        O(|V| + |E|) = O(n * m * 24 + 2 * n * m * 24) = O(n * m)
+        unde n - numarul de coloane
+             m - numarul de linii
+        
+        Complexitatea este astfel deoarece numarul de varfuri este numarul de 
+        stari posibile (adica pentru fiecare celula, avem 24 de posibilitati)
+
+      Complexitatea spatiala:
+          O(n * m * 24) = O(m * n) - care este data de dimensiunea matricii in
+                                     care se retin drumurile minime.
+
+
+  4. Problema Revedges (Bonus)
+    Pentru aceasta problema am aplicat Dijkstra astfel: deoarece se cere numarul
+    de inversiuni, acesta este dat de distanta minima in intr-un graf orientat
+    in care costul muchiilor este urmatorul: 
+       - 0 daca muchia este cea originala
+       - 1 daca muchia trebuie adaugata
+    
+    Complentand astfel graful, se garanteaza ca exista o cale intre nodul sursa
+    si destinatie, iar calea gasita va fi cea mai scurta (datorita 
+    algoritmului), iar aceasta lungima va da numarul minim de schimbarii.
+    Pentru a evita repetarea calculelor, se retin valorile obtinute intr-un 
+    HashMap care este folosit pe post de cache.
+
+    Complexitate algoritmului:
+      Complexitatea temporala:
+        O(q * (|V| + |E|)) = O(|V| * (|V| + |E|)) = O(|V|^3)
+      
+      In cazul in care exista mai multe query-uri de la aceeasi sursa, nu se 
+      mai recalculeaza, deci timpul de executie este marginit de numarul de 
+      noduri din graf. In cel mai rau caz, Dijkstra reuleaza in O(|V|^2), deci
+      astfel se justifica aceasta complexitate.
+
+    Complexitatea spatiala:
+      Complexitate spaiala este O(|V^2|), deoarece se pot retine in cel mai rau 
+      caz distantele intre oricare doua puncte. Retinerea listelor de adiacente
+      poti fi O(|V|^2) 
+
+REFERINTA:
+  [1] https://en.wikipedia.org/wiki/Combination
+
